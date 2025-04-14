@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Dumbbell, Plus, Clock, Flame } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { useNavigate } from 'react-router-dom';
 
-// Workout data
+// Updated workout data
 const workouts = {
   beginner: [
     {
@@ -19,6 +18,7 @@ const workouts = {
       description: 'A complete workout focusing on all major muscle groups',
       duration: '30 minutes',
       intensity: 'Low',
+      caloriesBurned: 150,
       exercises: [
         { name: 'Push-ups', sets: 2, reps: 10 },
         { name: 'Body-weight Squats', sets: 2, reps: 15 },
@@ -33,6 +33,7 @@ const workouts = {
       description: 'Focus on building a strong core foundation',
       duration: '20 minutes',
       intensity: 'Low',
+      caloriesBurned: 100,
       exercises: [
         { name: 'Crunches', sets: 2, reps: 15 },
         { name: 'Plank', sets: 3, time: '30 seconds' },
@@ -48,6 +49,7 @@ const workouts = {
       description: 'Build strength and definition in your upper body',
       duration: '45 minutes',
       intensity: 'Medium',
+      caloriesBurned: 300,
       exercises: [
         { name: 'Push-ups', sets: 3, reps: 15 },
         { name: 'Dumbbell Rows', sets: 3, reps: 12 },
@@ -62,6 +64,7 @@ const workouts = {
       description: 'Strengthen your legs and improve stability',
       duration: '40 minutes',
       intensity: 'Medium',
+      caloriesBurned: 280,
       exercises: [
         { name: 'Squats', sets: 3, reps: 15 },
         { name: 'Lunges', sets: 3, reps: 12 },
@@ -77,6 +80,7 @@ const workouts = {
       description: 'Maximum calorie burn and conditioning',
       duration: '30 minutes',
       intensity: 'High',
+      caloriesBurned: 400,
       exercises: [
         { name: 'Burpees', sets: 4, time: '45 seconds', rest: '15 seconds' },
         { name: 'Mountain Climbers', sets: 4, time: '45 seconds', rest: '15 seconds' },
@@ -90,6 +94,7 @@ const workouts = {
       description: 'Build strength and muscle across your entire body',
       duration: '60 minutes',
       intensity: 'High',
+      caloriesBurned: 450,
       exercises: [
         { name: 'Deadlifts', sets: 4, reps: 8 },
         { name: 'Bench Press', sets: 4, reps: 8 },
@@ -108,6 +113,7 @@ interface Workout {
   description: string;
   duration: string;
   intensity: string;
+  caloriesBurned: number;
   exercises: Array<{
     name: string;
     sets?: number;
@@ -199,6 +205,10 @@ const WorkoutPlans = () => {
                             {workout.intensity} Intensity
                           </Badge>
                         </div>
+                        <div className="flex items-center">
+                          <Flame className="h-4 w-4 mr-1 text-orange-500" />
+                          <span className="text-sm">{workout.caloriesBurned} cal</span>
+                        </div>
                       </div>
                       <div>
                         <h4 className="text-sm font-medium mb-2">Exercises:</h4>
@@ -257,6 +267,10 @@ const WorkoutPlans = () => {
                   <Badge variant="outline" className={getIntensityColor(selectedWorkout.intensity)}>
                     {selectedWorkout.intensity} Intensity
                   </Badge>
+                </div>
+                <div className="flex items-center">
+                  <Flame className="h-4 w-4 mr-1 text-orange-500" />
+                  <span className="text-sm">{selectedWorkout.caloriesBurned} cal</span>
                 </div>
               </div>
 
