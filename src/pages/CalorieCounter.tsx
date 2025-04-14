@@ -196,10 +196,7 @@ const CalorieCounter = () => {
               </div>
               <Progress 
                 value={(totalCaloriesToday / dailyCalorieGoal) * 100} 
-                className="h-2"
-                indicatorClassName={
-                  totalCaloriesToday > dailyCalorieGoal ? "bg-red-500" : "bg-fitness-teal"
-                }
+                className={`h-2 ${totalCaloriesToday > dailyCalorieGoal ? "bg-red-500" : "bg-fitness-teal"}`}
               />
             </div>
 
