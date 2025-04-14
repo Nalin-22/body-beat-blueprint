@@ -1,4 +1,10 @@
-import { FoodItem } from './foodDatabase';
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  category: 'vegetable' | 'fruit' | 'oil' | 'meat' | 'other';
+  caloriesPer100g: number;
+}
 
 export const foodDatabase: FoodItem[] = [
   // Vegetables
@@ -44,13 +50,6 @@ export const foodDatabase: FoodItem[] = [
   { id: 'm9', name: 'Cod', category: 'meat', caloriesPer100g: 82 },
   { id: 'm10', name: 'Shrimp', category: 'meat', caloriesPer100g: 99 },
 ];
-
-export interface FoodItem {
-  id: string;
-  name: string;
-  category: 'vegetable' | 'fruit' | 'oil' | 'meat' | 'other';
-  caloriesPer100g: number;
-}
 
 export const getFoodsByCategory = (category: string) => {
   return foodDatabase.filter(food => food.category === category);

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,14 @@ import { toast } from '@/components/ui/sonner';
 import { format } from 'date-fns';
 import { foodDatabase, FoodItem, calculateCalories } from '../data/foodDatabase';
 import { NotificationService } from '../services/NotificationService';
+
+interface FoodEntry {
+  id: string;
+  name: string;
+  calories: number;
+  time: string;
+  date: string;
+}
 
 const CalorieCounter = () => {
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>([]);
