@@ -1,12 +1,67 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dumbbell, History, LineChart, Target, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
+import { useEffect, useState } from 'react';
+
+interface WorkoutHistoryItem {
+  id: string;
+  title: string;
+  date: string;
+}
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [todayCalories, setTodayCalories] = useState(0);
+  const [latestWorkout, setLatestWorkout] = useState<WorkoutHistoryItem | null>(null);
+  const [bmiData, setBmiData] = useState<{ bmi: number | null, category: string }>({ bmi: null, category: '' });
+
+  useEffect(() => {
+    // Load workout history
+    const savedHistory = localStorage.getItem('workoutHistory');
+    if (savedHistory) {
+      const history = JSON.parse(savedHistory);
+      if (history.length > 0) {
+        setLatestWorkout(history[history.length - 1]);
+      }
+    }
+
+    // Load today's calories
+    const savedEntries = localStorage.getItem('calorieEntries');
+    if (savedEntries) {
+      const entries = JSON.parse(savedEntries);
+      const today = new Date().toDateString();
+      const todayEntries = entries.filter((entry: any) => 
+        new Date(entry.date).toDateString() === today
+      );
+      const total = todayEntries.reduce((sum: number, entry: any) => sum + entry.calories, 0);
+      setTodayCalories(total);
+    }
+
+    // Load BMI data
+    const savedBmi = localStorage.getItem('bmiData');
+    if (savedBmi) {
+      setBmiData(JSON.parse(savedBmi));
+    }
+  }, []);
+
+  const getBmiColor = (bmi: number | null) => {
+    if (!bmi) return '#gray';
+    if (bmi < 18.5) return '#3b82f6'; // blue for underweight
+    if (bmi >= 18.5 && bmi < 25) return '#22c55e'; // green for normal
+    if (bmi >= 25 && bmi < 30) return '#eab308'; // yellow for overweight
+    return '#ef4444'; // red for obese
+  };
+
+  const bmiChartData = [
+    {
+      name: 'BMI',
+      value: bmiData.bmi || 0,
+      fill: getBmiColor(bmiData.bmi),
+    },
+  ];
 
   return (
     <div className="space-y-8">
@@ -28,36 +83,22 @@ const Dashboard = () => {
                   <Dumbbell className="h-5 w-5 text-fitness-purple" />
                 </div>
                 <div>
-                  <p className="font-medium">No workouts yet</p>
-                  <p className="text-sm text-gray-500">Start your fitness journey</p>
+                  {latestWorkout ? (
+                    <>
+                      <p className="font-medium">{latestWorkout.title}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(latestWorkout.date).toLocaleDateString()}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-medium">No workouts yet</p>
+                      <p className="text-sm text-gray-500">Start your fitness journey</p>
+                    </>
+                  )}
                 </div>
               </div>
               <Link to="/dashboard/workout-plans">
-                <Button variant="ghost" size="sm">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-fitness-teal">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Workout Streak</CardTitle>
-            <CardDescription>Consistency is key</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="mr-4 rounded-full bg-fitness-teal/10 p-2">
-                  <History className="h-5 w-5 text-fitness-teal" />
-                </div>
-                <div>
-                  <p className="font-medium">0 Days</p>
-                  <p className="text-sm text-gray-500">Start a workout streak</p>
-                </div>
-              </div>
-              <Link to="/dashboard/workout-history">
                 <Button variant="ghost" size="sm">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -78,8 +119,8 @@ const Dashboard = () => {
                   <LineChart className="h-5 w-5 text-orange-500" />
                 </div>
                 <div>
-                  <p className="font-medium">0 kcal</p>
-                  <p className="text-sm text-gray-500">Log your meals</p>
+                  <p className="font-medium">{todayCalories} kcal</p>
+                  <p className="text-sm text-gray-500">Daily intake</p>
                 </div>
               </div>
               <Link to="/dashboard/calorie-counter">
@@ -87,6 +128,55 @@ const Dashboard = () => {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">BMI Status</CardTitle>
+            <CardDescription>{bmiData.category || 'Not calculated'}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="w-24 h-24">
+                {bmiData.bmi && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadialBarChart
+                      innerRadius="60%"
+                      outerRadius="100%"
+                      data={bmiChartData}
+                      startAngle={90}
+                      endAngle={-270}
+                    >
+                      <PolarAngleAxis
+                        type="number"
+                        domain={[0, 40]}
+                        angleAxisId={0}
+                        tick={false}
+                      />
+                      <RadialBar
+                        background
+                        dataKey="value"
+                        cornerRadius={30}
+                        fill={getBmiColor(bmiData.bmi)}
+                      />
+                    </RadialBarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+              <div className="flex flex-col items-end">
+                {bmiData.bmi ? (
+                  <p className="text-2xl font-bold">{bmiData.bmi.toFixed(1)}</p>
+                ) : (
+                  <p className="text-sm text-gray-500">Not calculated</p>
+                )}
+                <Link to="/dashboard/bmi-calculator">
+                  <Button variant="ghost" size="sm">
+                    Calculate <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>

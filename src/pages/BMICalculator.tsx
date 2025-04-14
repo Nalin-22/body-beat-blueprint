@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,11 +18,9 @@ const BMICalculator = () => {
       let bmiValue: number;
 
       if (unit === 'metric') {
-        // Metric: weight (kg) / height^2 (m)
         const heightInMeters = Number(height) / 100;
         bmiValue = Number(weight) / (heightInMeters * heightInMeters);
       } else {
-        // Imperial: (weight (lbs) * 703) / height^2 (inches)
         bmiValue = (Number(weight) * 703) / (Number(height) * Number(height));
       }
 
@@ -42,8 +39,13 @@ const BMICalculator = () => {
       } else {
         setBmiCategory('Obesity');
       }
+
+      localStorage.setItem('bmiData', JSON.stringify({
+        bmi: bmi,
+        category: bmiCategory,
+      }));
     }
-  }, [bmi]);
+  }, [bmi, bmiCategory]);
 
   const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
