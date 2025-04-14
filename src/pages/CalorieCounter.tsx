@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,14 +13,6 @@ import { format } from 'date-fns';
 import { foodDatabase, FoodItem, calculateCalories } from '../data/foodDatabase';
 import { NotificationService } from '../services/NotificationService';
 
-interface FoodEntry {
-  id: string;
-  name: string;
-  calories: number;
-  time: string;
-  date: string;
-}
-
 const CalorieCounter = () => {
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -32,17 +23,21 @@ const CalorieCounter = () => {
   const [weight, setWeight] = useState<string>('');
   const [mealType, setMealType] = useState('breakfast');
   
-  // Custom food entry fields
   const [customFoodName, setCustomFoodName] = useState('');
   const [customCalories, setCustomCalories] = useState('');
   
-  // Notification state
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   
-  const dailyCalorieGoal = 2000; // Example goal
+  const dailyCalorieGoal = 2000;
+
+  const foodCategories = [
+    { value: 'vegetable', label: 'Vegetables' },
+    { value: 'fruit', label: 'Fruits' },
+    { value: 'oil', label: 'Oils' },
+    { value: 'meat', label: 'Meats' }
+  ];
 
   useEffect(() => {
-    // Load food entries from localStorage
     const savedEntries = localStorage.getItem('calorieEntries');
     if (savedEntries) {
       setFoodEntries(JSON.parse(savedEntries));
@@ -93,10 +88,8 @@ const CalorieCounter = () => {
     const updatedEntries = [...foodEntries, newEntry];
     setFoodEntries(updatedEntries);
     
-    // Save to localStorage
     localStorage.setItem('calorieEntries', JSON.stringify(updatedEntries));
     
-    // Reset form
     setSelectedFoodId('');
     setWeight('');
     setDialogOpen(false);
@@ -126,10 +119,8 @@ const CalorieCounter = () => {
     const updatedEntries = [...foodEntries, newEntry];
     setFoodEntries(updatedEntries);
     
-    // Save to localStorage
     localStorage.setItem('calorieEntries', JSON.stringify(updatedEntries));
     
-    // Reset form
     setCustomFoodName('');
     setCustomCalories('');
     setCustomDialogOpen(false);
@@ -165,17 +156,14 @@ const CalorieCounter = () => {
     }
   };
 
-  // Filter entries for today
   const todayEntries = foodEntries.filter(entry => {
     const entryDate = new Date(entry.date);
     const today = new Date();
     return entryDate.toDateString() === today.toDateString();
   });
 
-  // Calculate total calories for today
   const totalCaloriesToday = todayEntries.reduce((sum, entry) => sum + entry.calories, 0);
   
-  // Group entries by meal type for today
   const breakfastEntries = todayEntries.filter(entry => {
     const hour = new Date(entry.date).getHours();
     return hour >= 5 && hour < 11;
@@ -196,7 +184,6 @@ const CalorieCounter = () => {
     return hour < 5 || hour >= 22;
   });
   
-  // Get foods by selected category
   const foodsByCategory = foodDatabase.filter(food => food.category === foodCategory);
 
   return (
@@ -237,9 +224,11 @@ const CalorieCounter = () => {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="vegetable">Vegetables</SelectItem>
-                      <SelectItem value="fruit">Fruits</SelectItem>
-                      <SelectItem value="oil">Oils</SelectItem>
+                      {foodCategories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

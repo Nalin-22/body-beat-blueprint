@@ -1,11 +1,4 @@
-
-// Basic database of common foods with calorie information per 100g
-export interface FoodItem {
-  id: string;
-  name: string;
-  category: 'vegetable' | 'fruit' | 'oil' | 'other';
-  caloriesPer100g: number;
-}
+import { FoodItem } from './foodDatabase';
 
 export const foodDatabase: FoodItem[] = [
   // Vegetables
@@ -38,7 +31,26 @@ export const foodDatabase: FoodItem[] = [
   { id: 'o3', name: 'Sunflower Oil', category: 'oil', caloriesPer100g: 884 },
   { id: 'o4', name: 'Canola Oil', category: 'oil', caloriesPer100g: 884 },
   { id: 'o5', name: 'Butter', category: 'oil', caloriesPer100g: 717 },
+  
+  // Meats
+  { id: 'm1', name: 'Chicken Breast', category: 'meat', caloriesPer100g: 165 },
+  { id: 'm2', name: 'Beef Steak', category: 'meat', caloriesPer100g: 250 },
+  { id: 'm3', name: 'Pork Chop', category: 'meat', caloriesPer100g: 231 },
+  { id: 'm4', name: 'Turkey', category: 'meat', caloriesPer100g: 189 },
+  { id: 'm5', name: 'Salmon', category: 'meat', caloriesPer100g: 208 },
+  { id: 'm6', name: 'Tuna', category: 'meat', caloriesPer100g: 184 },
+  { id: 'm7', name: 'Lamb', category: 'meat', caloriesPer100g: 294 },
+  { id: 'm8', name: 'Ground Beef', category: 'meat', caloriesPer100g: 254 },
+  { id: 'm9', name: 'Cod', category: 'meat', caloriesPer100g: 82 },
+  { id: 'm10', name: 'Shrimp', category: 'meat', caloriesPer100g: 99 },
 ];
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  category: 'vegetable' | 'fruit' | 'oil' | 'meat' | 'other';
+  caloriesPer100g: number;
+}
 
 export const getFoodsByCategory = (category: string) => {
   return foodDatabase.filter(food => food.category === category);
