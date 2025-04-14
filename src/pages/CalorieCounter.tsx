@@ -8,9 +8,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Apple, Plus, PieChart, Trash2 } from 'lucide-react';
+import { Apple, Plus, PieChart, Trash2, Utensils, Bell } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { format } from 'date-fns';
+import { foodDatabase, FoodItem, calculateCalories } from '../data/foodDatabase';
+import { NotificationService } from '../services/NotificationService';
 
 interface FoodEntry {
   id: string;
@@ -23,9 +25,19 @@ interface FoodEntry {
 const CalorieCounter = () => {
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [foodName, setFoodName] = useState('');
-  const [calories, setCalories] = useState('');
+  const [customDialogOpen, setCustomDialogOpen] = useState(false);
+  const [foodCategory, setFoodCategory] = useState<string>('vegetable');
+  const [selectedFoodId, setSelectedFoodId] = useState<string>('');
+  const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
+  const [weight, setWeight] = useState<string>('');
   const [mealType, setMealType] = useState('breakfast');
+  
+  // Custom food entry fields
+  const [customFoodName, setCustomFoodName] = useState('');
+  const [customCalories, setCustomCalories] = useState('');
+  
+  // Notification state
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   
   const dailyCalorieGoal = 2000; // Example goal
 
@@ -36,22 +48,44 @@ const CalorieCounter = () => {
       setFoodEntries(JSON.parse(savedEntries));
     }
   }, []);
+  
+  useEffect(() => {
+    if (selectedFoodId) {
+      const food = foodDatabase.find(item => item.id === selectedFoodId);
+      setSelectedFood(food || null);
+    } else {
+      setSelectedFood(null);
+    }
+  }, [selectedFoodId]);
+  
+  useEffect(() => {
+    const checkNotificationStatus = async () => {
+      if ("Notification" in window) {
+        const status = Notification.permission === "granted";
+        setNotificationsEnabled(status);
+      }
+    };
+    
+    checkNotificationStatus();
+  }, []);
 
   const handleAddFoodEntry = () => {
-    if (!foodName || !calories) {
-      toast.error('Please fill in all fields');
+    if (!selectedFood || !weight) {
+      toast.error('Please select a food item and enter weight');
       return;
     }
 
-    if (isNaN(Number(calories)) || Number(calories) <= 0) {
-      toast.error('Please enter a valid calorie amount');
+    if (isNaN(Number(weight)) || Number(weight) <= 0) {
+      toast.error('Please enter a valid weight');
       return;
     }
 
+    const calculatedCalories = calculateCalories(selectedFood.id, Number(weight));
+    
     const newEntry: FoodEntry = {
       id: Date.now().toString(),
-      name: foodName,
-      calories: Number(calories),
+      name: `${selectedFood.name} (${weight}g)`,
+      calories: calculatedCalories,
       time: format(new Date(), 'h:mm a'),
       date: new Date().toISOString(),
     };
@@ -63,11 +97,44 @@ const CalorieCounter = () => {
     localStorage.setItem('calorieEntries', JSON.stringify(updatedEntries));
     
     // Reset form
-    setFoodName('');
-    setCalories('');
+    setSelectedFoodId('');
+    setWeight('');
     setDialogOpen(false);
     
     toast.success('Food entry added successfully');
+  };
+  
+  const handleAddCustomFoodEntry = () => {
+    if (!customFoodName || !customCalories) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (isNaN(Number(customCalories)) || Number(customCalories) <= 0) {
+      toast.error('Please enter a valid calorie amount');
+      return;
+    }
+
+    const newEntry: FoodEntry = {
+      id: Date.now().toString(),
+      name: customFoodName,
+      calories: Number(customCalories),
+      time: format(new Date(), 'h:mm a'),
+      date: new Date().toISOString(),
+    };
+
+    const updatedEntries = [...foodEntries, newEntry];
+    setFoodEntries(updatedEntries);
+    
+    // Save to localStorage
+    localStorage.setItem('calorieEntries', JSON.stringify(updatedEntries));
+    
+    // Reset form
+    setCustomFoodName('');
+    setCustomCalories('');
+    setCustomDialogOpen(false);
+    
+    toast.success('Custom food entry added successfully');
   };
 
   const handleDeleteEntry = (id: string) => {
@@ -75,6 +142,27 @@ const CalorieCounter = () => {
     setFoodEntries(updatedEntries);
     localStorage.setItem('calorieEntries', JSON.stringify(updatedEntries));
     toast.success('Food entry removed');
+  };
+  
+  const toggleNotifications = async () => {
+    const notificationService = NotificationService.getInstance();
+    const granted = await notificationService.initialize();
+    
+    if (granted) {
+      if (!notificationsEnabled) {
+        notificationService.startWorkoutReminders();
+        notificationService.startMovementDetection();
+        setNotificationsEnabled(true);
+        toast.success('Notifications enabled');
+      } else {
+        notificationService.stopWorkoutReminders();
+        notificationService.stopMovementDetection();
+        setNotificationsEnabled(false);
+        toast.success('Notifications disabled');
+      }
+    } else {
+      toast.error('Notification permission denied');
+    }
   };
 
   // Filter entries for today
@@ -107,6 +195,9 @@ const CalorieCounter = () => {
     const hour = new Date(entry.date).getHours();
     return hour < 5 || hour >= 22;
   });
+  
+  // Get foods by selected category
+  const foodsByCategory = foodDatabase.filter(food => food.category === foodCategory);
 
   return (
     <div>
@@ -120,64 +211,162 @@ const CalorieCounter = () => {
             <p className="text-gray-600">Track your daily food intake</p>
           </div>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add Food
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add Food Entry</DialogTitle>
-              <DialogDescription>
-                Track what you've eaten and its calorie content
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="food-name">Food Name</Label>
-                <Input 
-                  id="food-name" 
-                  placeholder="e.g., Grilled Chicken Salad" 
-                  value={foodName}
-                  onChange={(e) => setFoodName(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="calories">Calories</Label>
-                <Input 
-                  id="calories" 
-                  type="number" 
-                  placeholder="e.g., 350" 
-                  value={calories}
-                  onChange={(e) => setCalories(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="meal-type">Meal Type</Label>
-                <Select value={mealType} onValueChange={setMealType}>
-                  <SelectTrigger id="meal-type">
-                    <SelectValue placeholder="Select meal type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="breakfast">Breakfast</SelectItem>
-                    <SelectItem value="lunch">Lunch</SelectItem>
-                    <SelectItem value="dinner">Dinner</SelectItem>
-                    <SelectItem value="snack">Snack</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
+        <div className="flex space-x-2">
+          <Button variant={notificationsEnabled ? "default" : "outline"} onClick={toggleNotifications}>
+            <Bell className={`mr-2 h-4 w-4 ${notificationsEnabled ? "" : "text-muted-foreground"}`} />
+            {notificationsEnabled ? "Notifications On" : "Enable Notifications"}
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Add Food
               </Button>
-              <Button onClick={handleAddFoodEntry}>
-                Add Entry
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Food Entry</DialogTitle>
+                <DialogDescription>
+                  Select food from our database and track your calories
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="food-category">Food Category</Label>
+                  <Select value={foodCategory} onValueChange={setFoodCategory}>
+                    <SelectTrigger id="food-category">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="vegetable">Vegetables</SelectItem>
+                      <SelectItem value="fruit">Fruits</SelectItem>
+                      <SelectItem value="oil">Oils</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="food-item">Food Item</Label>
+                  <Select value={selectedFoodId} onValueChange={setSelectedFoodId}>
+                    <SelectTrigger id="food-item">
+                      <SelectValue placeholder="Select food item" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {foodsByCategory.map((food) => (
+                        <SelectItem key={food.id} value={food.id}>
+                          {food.name} ({food.caloriesPer100g} cal/100g)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="weight">Amount (grams)</Label>
+                  <Input 
+                    id="weight" 
+                    type="number" 
+                    placeholder="e.g., 100" 
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                  />
+                </div>
+                
+                {selectedFood && weight && !isNaN(Number(weight)) && Number(weight) > 0 && (
+                  <div className="p-3 bg-orange-50 rounded-md">
+                    <p className="text-sm">
+                      Calculated Calories: <span className="font-medium">{calculateCalories(selectedFood.id, Number(weight))}</span> kcal
+                    </p>
+                  </div>
+                )}
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="meal-type">Meal Type</Label>
+                  <Select value={mealType} onValueChange={setMealType}>
+                    <SelectTrigger id="meal-type">
+                      <SelectValue placeholder="Select meal type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="breakfast">Breakfast</SelectItem>
+                      <SelectItem value="lunch">Lunch</SelectItem>
+                      <SelectItem value="dinner">Dinner</SelectItem>
+                      <SelectItem value="snack">Snack</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter className="flex justify-between items-center">
+                <Button variant="outline" onClick={() => setCustomDialogOpen(true)}>
+                  <Utensils className="mr-2 h-4 w-4" /> Custom Food
+                </Button>
+                <div>
+                  <Button variant="outline" className="mr-2" onClick={() => setDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddFoodEntry} disabled={!selectedFood || !weight || isNaN(Number(weight)) || Number(weight) <= 0}>
+                    Add Entry
+                  </Button>
+                </div>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={customDialogOpen} onOpenChange={setCustomDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Custom Food Entry</DialogTitle>
+                <DialogDescription>
+                  Enter details for a food item not in our database
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="custom-food-name">Food Name</Label>
+                  <Input 
+                    id="custom-food-name" 
+                    placeholder="e.g., Homemade Salad" 
+                    value={customFoodName}
+                    onChange={(e) => setCustomFoodName(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="custom-calories">Calories</Label>
+                  <Input 
+                    id="custom-calories" 
+                    type="number" 
+                    placeholder="e.g., 350" 
+                    value={customCalories}
+                    onChange={(e) => setCustomCalories(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="custom-meal-type">Meal Type</Label>
+                  <Select value={mealType} onValueChange={setMealType}>
+                    <SelectTrigger id="custom-meal-type">
+                      <SelectValue placeholder="Select meal type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="breakfast">Breakfast</SelectItem>
+                      <SelectItem value="lunch">Lunch</SelectItem>
+                      <SelectItem value="dinner">Dinner</SelectItem>
+                      <SelectItem value="snack">Snack</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => {
+                  setCustomDialogOpen(false);
+                  setDialogOpen(true);
+                }}>
+                  Back
+                </Button>
+                <Button onClick={handleAddCustomFoodEntry}>
+                  Add Custom Entry
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -196,7 +385,7 @@ const CalorieCounter = () => {
               </div>
               <Progress 
                 value={(totalCaloriesToday / dailyCalorieGoal) * 100} 
-                className={`h-2 ${totalCaloriesToday > dailyCalorieGoal ? "bg-red-500" : "bg-fitness-teal"}`}
+                className={`h-2 ${totalCaloriesToday > dailyCalorieGoal ? "bg-red-500" : ""}`}
               />
             </div>
 

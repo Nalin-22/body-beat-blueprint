@@ -1,10 +1,10 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { useNotifications } from "./hooks/useNotifications";
 
 // Pages
 import GetStarted from "./pages/GetStarted";
@@ -46,22 +46,26 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<PublicRoute><GetStarted /></PublicRoute>} />
-    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-    
-    <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-      <Route index element={<Dashboard />} />
-      <Route path="workout-plans" element={<WorkoutPlans />} />
-      <Route path="workout-history" element={<WorkoutHistory />} />
-      <Route path="calorie-counter" element={<CalorieCounter />} />
-      <Route path="bmi-calculator" element={<BMICalculator />} />
-    </Route>
-    
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-);
+const AppRoutes = () => {
+  useNotifications();
+  
+  return (
+    <Routes>
+      <Route path="/" element={<PublicRoute><GetStarted /></PublicRoute>} />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+        <Route index element={<Dashboard />} />
+        <Route path="workout-plans" element={<WorkoutPlans />} />
+        <Route path="workout-history" element={<WorkoutHistory />} />
+        <Route path="calorie-counter" element={<CalorieCounter />} />
+        <Route path="bmi-calculator" element={<BMICalculator />} />
+      </Route>
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
