@@ -1,16 +1,17 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Dumbbell, History, LineChart, Target, ChevronRight } from 'lucide-react';
+import { 
+  Dumbbell, 
+  History, 
+  LineChart, 
+  Target, 
+  ChevronRight 
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
-import { useEffect, useState } from 'react';
-
-interface WorkoutHistoryItem {
-  id: string;
-  title: string;
-  date: string;
-}
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -187,45 +188,45 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link to="/dashboard/workout-plans">
             <Card className="hover:shadow-md transition-shadow duration-300 cursor-pointer h-full">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div className="rounded-full bg-fitness-purple/10 p-4 mb-4">
+              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                <div className="rounded-full bg-fitness-purple/10 p-4 mb-4 flex items-center justify-center">
                   <Dumbbell className="h-6 w-6 text-fitness-purple" />
                 </div>
-                <h3 className="font-medium mb-1">Workout Plans</h3>
-                <p className="text-sm text-gray-500">Discover workout routines</p>
+                <h3 className="font-medium mb-1 text-center">Workout Plans</h3>
+                <p className="text-sm text-gray-500 text-center">Discover workout routines</p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/dashboard/workout-history">
             <Card className="hover:shadow-md transition-shadow duration-300 cursor-pointer h-full">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div className="rounded-full bg-fitness-teal/10 p-4 mb-4">
+              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                <div className="rounded-full bg-fitness-teal/10 p-4 mb-4 flex items-center justify-center">
                   <History className="h-6 w-6 text-fitness-teal" />
                 </div>
-                <h3 className="font-medium mb-1">Workout History</h3>
-                <p className="text-sm text-gray-500">Review your activity</p>
+                <h3 className="font-medium mb-1 text-center">Workout History</h3>
+                <p className="text-sm text-gray-500 text-center">Review your activity</p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/dashboard/calorie-counter">
             <Card className="hover:shadow-md transition-shadow duration-300 cursor-pointer h-full">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div className="rounded-full bg-orange-500/10 p-4 mb-4">
+              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                <div className="rounded-full bg-orange-500/10 p-4 mb-4 flex items-center justify-center">
                   <LineChart className="h-6 w-6 text-orange-500" />
                 </div>
-                <h3 className="font-medium mb-1">Calorie Counter</h3>
-                <p className="text-sm text-gray-500">Track your nutrition</p>
+                <h3 className="font-medium mb-1 text-center">Calorie Counter</h3>
+                <p className="text-sm text-gray-500 text-center">Track your nutrition</p>
               </CardContent>
             </Card>
           </Link>
           <Link to="/dashboard/bmi-calculator">
             <Card className="hover:shadow-md transition-shadow duration-300 cursor-pointer h-full">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div className="rounded-full bg-blue-500/10 p-4 mb-4">
+              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                <div className="rounded-full bg-blue-500/10 p-4 mb-4 flex items-center justify-center">
                   <Target className="h-6 w-6 text-blue-500" />
                 </div>
-                <h3 className="font-medium mb-1">BMI Calculator</h3>
-                <p className="text-sm text-gray-500">Check your BMI status</p>
+                <h3 className="font-medium mb-1 text-center">BMI Calculator</h3>
+                <p className="text-sm text-gray-500 text-center">Check your BMI status</p>
               </CardContent>
             </Card>
           </Link>
