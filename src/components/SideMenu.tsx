@@ -97,8 +97,8 @@ const SideMenu = () => {
                     <Link 
                       to={item.path}
                       className={cn(
-                        "flex items-center p-3 rounded-md transition-all hover:bg-sidebar-accent group",
-                        location.pathname === item.path && "bg-primary text-primary-foreground",
+                        "flex items-center p-3 rounded-md transition-all hover:bg-sidebar-accent/70 group",
+                        location.pathname === item.path ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:text-accent-foreground",
                         !isOpen && "justify-center md:justify-center"
                       )}
                     >

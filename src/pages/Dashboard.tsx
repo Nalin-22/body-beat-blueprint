@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,6 @@ import {
 import { Link } from 'react-router-dom';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
 
-// Define the WorkoutHistoryItem interface
 interface WorkoutHistoryItem {
   id: string;
   title: string;
@@ -27,7 +25,6 @@ const Dashboard = () => {
   const [bmiData, setBmiData] = useState<{ bmi: number | null, category: string }>({ bmi: null, category: '' });
 
   useEffect(() => {
-    // Load workout history
     const savedHistory = localStorage.getItem('workoutHistory');
     if (savedHistory) {
       const history = JSON.parse(savedHistory);
@@ -36,7 +33,6 @@ const Dashboard = () => {
       }
     }
 
-    // Load today's calories
     const savedEntries = localStorage.getItem('calorieEntries');
     if (savedEntries) {
       const entries = JSON.parse(savedEntries);
@@ -48,7 +44,6 @@ const Dashboard = () => {
       setTodayCalories(total);
     }
 
-    // Load BMI data
     const savedBmi = localStorage.getItem('bmiData');
     if (savedBmi) {
       setBmiData(JSON.parse(savedBmi));
@@ -57,10 +52,10 @@ const Dashboard = () => {
 
   const getBmiColor = (bmi: number | null) => {
     if (!bmi) return '#gray';
-    if (bmi < 18.5) return '#3b82f6'; // blue for underweight
-    if (bmi >= 18.5 && bmi < 25) return '#22c55e'; // green for normal
-    if (bmi >= 25 && bmi < 30) return '#eab308'; // yellow for overweight
-    return '#ef4444'; // red for obese
+    if (bmi < 18.5) return '#3b82f6';
+    if (bmi >= 18.5 && bmi < 25) return '#22c55e';
+    if (bmi >= 25 && bmi < 30) return '#eab308';
+    return '#ef4444';
   };
 
   const bmiChartData = [
