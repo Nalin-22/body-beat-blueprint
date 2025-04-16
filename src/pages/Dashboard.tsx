@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -12,6 +12,13 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
+
+// Define the WorkoutHistoryItem interface
+interface WorkoutHistoryItem {
+  id: string;
+  title: string;
+  date: string;
+}
 
 const Dashboard = () => {
   const { user } = useAuth();
