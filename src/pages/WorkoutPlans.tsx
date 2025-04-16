@@ -5,11 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dumbbell, Plus, Clock, Flame } from 'lucide-react';
+import { Dumbbell, Plus, Clock, Flame, Play } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { useNavigate } from 'react-router-dom';
+import ExerciseDemo from '@/components/ExerciseDemo';
 
-// Updated workout data
 const workouts = {
   beginner: [
     {
@@ -20,7 +20,12 @@ const workouts = {
       intensity: 'Low',
       caloriesBurned: 150,
       exercises: [
-        { name: 'Push-ups', sets: 2, reps: 10 },
+        { 
+          name: 'Push-ups', 
+          sets: 2, 
+          reps: 10,
+          demoUrl: 'https://example.com/pushup-demo.mp4'  // Replace with actual demo URL
+        },
         { name: 'Body-weight Squats', sets: 2, reps: 15 },
         { name: 'Plank', sets: 2, time: '30 seconds' },
         { name: 'Lunges', sets: 2, reps: 10 },
@@ -107,6 +112,15 @@ const workouts = {
   custom: []
 };
 
+interface Exercise {
+  name: string;
+  sets?: number;
+  reps?: number;
+  time?: string;
+  rest?: string;
+  demoUrl?: string;
+}
+
 interface Workout {
   id: string;
   title: string;
@@ -114,25 +128,18 @@ interface Workout {
   duration: string;
   intensity: string;
   caloriesBurned: number;
-  exercises: Array<{
-    name: string;
-    sets?: number;
-    reps?: number;
-    time?: string;
-    rest?: string;
-  }>;
+  exercises: Exercise[];
 }
 
 const WorkoutPlans = () => {
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const navigate = useNavigate();
 
   const startWorkout = (workout: Workout) => {
-    // In a real app, this would start the workout and track progress
     toast.success(`Started: ${workout.title}`);
     
-    // Add to workout history
     const history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
     history.push({
       id: workout.id,
@@ -141,7 +148,6 @@ const WorkoutPlans = () => {
     });
     localStorage.setItem('workoutHistory', JSON.stringify(history));
     
-    // Navigate to history page
     navigate('/dashboard/workout-history');
   };
 
@@ -247,7 +253,6 @@ const WorkoutPlans = () => {
         ))}
       </Tabs>
 
-      {/* Workout Details Dialog */}
       {selectedWorkout && (
         <Dialog open={!!selectedWorkout} onOpenChange={() => setSelectedWorkout(null)}>
           <DialogContent className="sm:max-w-lg">
@@ -257,7 +262,7 @@ const WorkoutPlans = () => {
             </DialogHeader>
 
             <div className="space-y-4">
-              <div className="flex space-x-4">
+              <div className="flex justify-center space-x-4">
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-1 text-gray-500" />
                   <span className="text-sm">{selectedWorkout.duration}</span>
@@ -280,7 +285,16 @@ const WorkoutPlans = () => {
                   <div className="space-y-4">
                     {selectedWorkout.exercises.map((exercise, index) => (
                       <div key={index} className="border-b pb-3 last:border-0 last:pb-0">
-                        <h5 className="font-medium">{exercise.name}</h5>
+                        <div className="flex items-center justify-between">
+                          <h5 className="font-medium">{exercise.name}</h5>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSelectedExercise(exercise)}
+                          >
+                            <Play className="h-4 w-4" />
+                          </Button>
+                        </div>
                         <div className="text-sm text-gray-500 mt-1">
                           {exercise.sets && exercise.reps && (
                             <p>{exercise.sets} sets × {exercise.reps} reps</p>
@@ -311,7 +325,14 @@ const WorkoutPlans = () => {
         </Dialog>
       )}
 
-      {/* Create Custom Workout Dialog */}
+      {selectedExercise && (
+        <ExerciseDemo
+          exercise={selectedExercise}
+          isOpen={!!selectedExercise}
+          onClose={() => setSelectedExercise(null)}
+        />
+      )}
+
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
