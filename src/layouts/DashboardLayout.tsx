@@ -7,7 +7,7 @@ const DashboardLayout = () => {
   return <div className="flex min-h-screen bg-gray-50">
       <SideMenu />
       <main className={cn("flex-1 transition-all duration-300", isSidebarOpen ? "md:ml-64" : "md:ml-20")}>
-        <div className="container max-w-1/2 py-8 px-px">
+        <div className="container w-1/2 py-8 px-px">
           <Outlet />
         </div>
       </main>
