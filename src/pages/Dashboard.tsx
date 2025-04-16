@@ -67,8 +67,8 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
+    <div className="space-y-8 ml-0 md:ml-4">
+      <div className="text-left">
         <h1 className="text-3xl font-bold mb-2">Welcome back{user?.name ? `, ${user.name}` : ''}</h1>
         <p className="text-gray-600">Here's an overview of your fitness journey</p>
       </div>
@@ -80,26 +80,24 @@ const Dashboard = () => {
             <CardDescription>Your most recent activity</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="mr-4 rounded-full bg-fitness-purple/10 p-2">
-                  <Dumbbell className="h-5 w-5 text-fitness-purple" />
-                </div>
-                <div>
-                  {latestWorkout ? (
-                    <>
-                      <p className="font-medium">{latestWorkout.title}</p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(latestWorkout.date).toLocaleDateString()}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="font-medium">No workouts yet</p>
-                      <p className="text-sm text-gray-500">Start your fitness journey</p>
-                    </>
-                  )}
-                </div>
+            <div className="flex items-center justify-start">
+              <div className="mr-4 rounded-full bg-fitness-purple/10 p-2">
+                <Dumbbell className="h-5 w-5 text-fitness-purple" />
+              </div>
+              <div className="flex-1">
+                {latestWorkout ? (
+                  <>
+                    <p className="font-medium">{latestWorkout.title}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(latestWorkout.date).toLocaleDateString()}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-medium">No workouts yet</p>
+                    <p className="text-sm text-gray-500">Start your fitness journey</p>
+                  </>
+                )}
               </div>
               <Link to="/dashboard/workout-plans">
                 <Button variant="ghost" size="sm">
@@ -116,15 +114,13 @@ const Dashboard = () => {
             <CardDescription>Track your nutrition</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="mr-4 rounded-full bg-orange-500/10 p-2">
-                  <LineChart className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <p className="font-medium">{todayCalories} kcal</p>
-                  <p className="text-sm text-gray-500">Daily intake</p>
-                </div>
+            <div className="flex items-center justify-start">
+              <div className="mr-4 rounded-full bg-orange-500/10 p-2">
+                <LineChart className="h-5 w-5 text-orange-500" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium">{todayCalories} kcal</p>
+                <p className="text-sm text-gray-500">Daily intake</p>
               </div>
               <Link to="/dashboard/calorie-counter">
                 <Button variant="ghost" size="sm">
@@ -138,11 +134,11 @@ const Dashboard = () => {
         <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">BMI Status</CardTitle>
-            <CardDescription>{bmiData.category || 'Not calculated'}</CardDescription>
+            <CardDescription>{bmiData.bmi ? bmiData.category : 'Not calculated'}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="w-24 h-24">
+            <div className="flex items-center justify-start">
+              <div className="w-24 h-24 mr-4">
                 {bmiData.bmi && (
                   <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart
@@ -168,7 +164,7 @@ const Dashboard = () => {
                   </ResponsiveContainer>
                 )}
               </div>
-              <div className="flex flex-col items-end">
+              <div className="flex-1">
                 {bmiData.bmi ? (
                   <p className="text-2xl font-bold">{bmiData.bmi.toFixed(1)}</p>
                 ) : (
@@ -186,16 +182,16 @@ const Dashboard = () => {
       </div>
 
       <div>
-        <h2 className="text-xl font-bold mb-4">Quick Access</h2>
+        <h2 className="text-xl font-bold mb-4 text-left">Quick Access</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link to="/dashboard/workout-plans">
-            <Card className="hover:shadow-md transition-shadow duration-300 cursor-pointer h-full">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+          <Link to="/dashboard/workout-plans" className="flex">
+            <Card className="hover:shadow-md transition-shadow duration-300 cursor-pointer w-full">
+              <CardContent className="p-6 flex flex-col items-start">
                 <div className="rounded-full bg-fitness-purple/10 p-4 mb-4 flex items-center justify-center">
                   <Dumbbell className="h-6 w-6 text-fitness-purple" />
                 </div>
-                <h3 className="font-medium mb-1 text-center">Workout Plans</h3>
-                <p className="text-sm text-gray-500 text-center">Discover workout routines</p>
+                <h3 className="font-medium mb-1 text-left">Workout Plans</h3>
+                <p className="text-sm text-gray-500 text-left">Discover workout routines</p>
               </CardContent>
             </Card>
           </Link>
