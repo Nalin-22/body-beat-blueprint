@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,13 +68,13 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-8 ml-0 md:ml-4">
+    <div className="space-y-6">
       <div className="text-left">
         <h1 className="text-3xl font-bold mb-2">Welcome back{user?.name ? `, ${user.name}` : ''}</h1>
         <p className="text-gray-600">Here's an overview of your fitness journey</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="border-l-4 border-l-fitness-purple">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium">Latest Workout</CardTitle>
