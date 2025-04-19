@@ -4,24 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   Home, 
   Calculator, 
-  LogOut, 
-  Menu, 
+  LogOut,
   Dumbbell, 
   History, 
   Apple
 } from 'lucide-react';
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
-  SidebarProvider,
-  SidebarFooter
-} from "@/components/ui/sidebar";
 
 const menuItems = [
   { 
@@ -56,46 +43,41 @@ const SideMenu = () => {
   const location = useLocation();
 
   return (
-    <SidebarProvider defaultOpen>
-      <div className="flex min-h-screen w-full">
-        <Sidebar>
-          <SidebarHeader className="flex items-center px-4 py-2">
-            <h2 className="font-bold text-xl">FitTrack</h2>
-            <div className="flex-1" />
-            <SidebarTrigger />
-          </SidebarHeader>
-
-          <SidebarContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={location.pathname === item.path}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.path}>
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarContent>
-
-          <SidebarFooter className="p-4">
-            <SidebarMenuButton
-              onClick={logout}
-              className="w-full text-red-500 hover:bg-red-100 hover:text-red-700"
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Log Out</span>
-            </SidebarMenuButton>
-          </SidebarFooter>
-        </Sidebar>
+    <div className="w-64 bg-white shadow-md min-h-screen p-4 flex flex-col">
+      <div className="flex items-center mb-6">
+        <h2 className="text-xl font-bold">FitTrack</h2>
       </div>
-    </SidebarProvider>
+      
+      <nav className="flex-1">
+        <ul className="space-y-2">
+          {menuItems.map((item) => (
+            <li key={item.path}>
+              <Link
+                to={item.path}
+                className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+                  location.pathname === item.path
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted'
+                }`}
+              >
+                <item.icon className="h-5 w-5 mr-3" />
+                <span>{item.title}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      
+      <div className="mt-auto pt-4 border-t">
+        <button
+          onClick={logout}
+          className="flex items-center w-full px-4 py-2 text-red-500 hover:bg-red-100 hover:text-red-700 rounded-md transition-colors"
+        >
+          <LogOut className="h-5 w-5 mr-3" />
+          <span>Log Out</span>
+        </button>
+      </div>
+    </div>
   );
 };
 
