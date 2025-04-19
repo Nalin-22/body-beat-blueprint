@@ -84,11 +84,18 @@ const GetStarted = () => {
                     Next
                   </Button>
                 ) : (
-                  <Link to="/login">
-                    <Button className="px-4">
-                      Get Started
-                    </Button>
-                  </Link>
+                  <div className="space-x-2">
+                    <Link to="/login">
+                      <Button variant="outline" className="px-4">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/register">
+                      <Button className="px-4">
+                        Sign Up
+                      </Button>
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
@@ -96,9 +103,12 @@ const GetStarted = () => {
         </Card>
         
         {currentSlide !== slides.length - 1 && (
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <Link to="/login" className="text-fitness-purple hover:text-fitness-purple/80 flex items-center justify-center">
-              Skip Intro <ChevronRight className="h-4 w-4 ml-1" />
+              Sign In <ChevronRight className="h-4 w-4 ml-1" />
+            </Link>
+            <Link to="/register" className="text-fitness-purple hover:text-fitness-purple/80 flex items-center justify-center">
+              Create Account <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
         )}

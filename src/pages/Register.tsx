@@ -9,11 +9,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Dumbbell } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
-const Login = () => {
+const Register = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +23,7 @@ const Login = () => {
     setIsLoading(true);
     
     // Validate email and password
-    if (!email || !password) {
+    if (!name || !email || !password || !confirmPassword) {
       toast.error('Please fill in all fields');
       setIsLoading(false);
       return;
@@ -35,11 +37,25 @@ const Login = () => {
       return;
     }
     
-    // Login
-    const success = await login(email, password);
+    // Check password match
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+    
+    // Check password strength
+    if (password.length < 6) {
+      toast.error('Password should be at least 6 characters long');
+      setIsLoading(false);
+      return;
+    }
+    
+    // Register user
+    const success = await register(email, password, name);
     
     if (success) {
-      toast.success('Login successful!');
+      toast.success('Registration successful!');
       navigate('/dashboard');
     }
     
@@ -57,14 +73,25 @@ const Login = () => {
         
         <Card className="border-none shadow-lg">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+            <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
             <CardDescription>
-              Enter your email to sign in to your account
+              Enter your information to create your FitTrack account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -77,12 +104,7 @@ const Login = () => {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <Link to="/forgot-password" className="text-sm text-fitness-purple hover:underline">
-                      Forgot password?
-                    </Link>
-                  </div>
+                  <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
                     type="password"
@@ -91,17 +113,27 @@ const Login = () => {
                     required
                   />
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Signing in...' : 'Sign in'}
+                  {isLoading ? 'Creating account...' : 'Create Account'}
                 </Button>
               </div>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col">
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{' '}
-              <Link to="/register" className="text-fitness-purple hover:underline">
-                Sign up
+              Already have an account?{' '}
+              <Link to="/login" className="text-fitness-purple hover:underline">
+                Sign in
               </Link>
             </div>
           </CardFooter>
@@ -111,4 +143,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
