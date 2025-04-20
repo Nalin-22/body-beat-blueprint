@@ -20,14 +20,12 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Validate email and password
     if (!email || !password) {
       toast.error('Please fill in all fields');
       setIsLoading(false);
       return;
     }
     
-    // Basic email validation
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
       toast.error('Please enter a valid email address');
@@ -35,11 +33,9 @@ const Login = () => {
       return;
     }
     
-    // Login
     const success = await login(email, password);
     
     if (success) {
-      toast.success('Login successful!');
       navigate('/dashboard');
     }
     
@@ -99,7 +95,7 @@ const Login = () => {
           </CardContent>
           <CardFooter className="flex flex-col">
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{' '}
+              Don't have an account?{' '}
               <Link to="/register" className="text-fitness-purple hover:underline">
                 Sign up
               </Link>

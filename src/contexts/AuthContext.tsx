@@ -1,127 +1,101 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, AuthError } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/sonner';
-
-interface User {
-  email: string;
-  name?: string;
-}
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Helper to save user data to localStorage
-const saveUserToStorage = (user: User) => {
-  localStorage.setItem('fittrackUser', JSON.stringify(user));
-};
-
-// Helper to remove user data from localStorage
-const removeUserFromStorage = () => {
-  localStorage.removeItem('fittrackUser');
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing user session on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem('fittrackUser');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user data:', error);
-      }
-    }
-    setIsLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
     try {
-      // In a real app with backend, we'd validate with an API
-      // For now, simulate validation with some basic checks
-      if (!email || !password) {
-        toast.error('Please provide both email and password');
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast.error(error.message);
         return false;
       }
-      
-      // Simulate successful login after validation
-      const userData: User = { email };
-      setUser(userData);
-      saveUserToStorage(userData);
-      
+
+      toast.success('Logged in successfully');
       return true;
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Login failed. Please try again.');
+      toast.error('Failed to login');
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
-    setIsLoading(true);
-    
     try {
-      // Validate input data
-      if (!email || !password) {
-        toast.error('Please provide all required fields');
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        }
+      });
+
+      if (error) {
+        toast.error(error.message);
         return false;
       }
-      
-      // Check for existing users (would be done on the backend in a real app)
-      const existingUsers = localStorage.getItem('fittrackUsers');
-      let users = existingUsers ? JSON.parse(existingUsers) : [];
-      
-      const userExists = users.some((u: User) => u.email === email);
-      if (userExists) {
-        toast.error('An account with this email already exists');
-        return false;
-      }
-      
-      // Create new user
-      const newUser: User = { email, name };
-      users.push(newUser);
-      localStorage.setItem('fittrackUsers', JSON.stringify(users));
-      
-      // Log in the user after successful registration
-      setUser(newUser);
-      saveUserToStorage(newUser);
-      
+
+      toast.success('Please check your email to verify your account');
       return true;
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error('Registration failed. Please try again.');
+      toast.error('Failed to register');
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    removeUserFromStorage();
-    toast.success('Logged out successfully');
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Failed to logout');
+    } else {
+      toast.success('Logged out successfully');
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      login, 
-      register, 
-      logout, 
+    <AuthContext.Provider value={{
+      user,
+      login,
+      register,
+      logout,
       isAuthenticated: !!user,
       isLoading
     }}>
