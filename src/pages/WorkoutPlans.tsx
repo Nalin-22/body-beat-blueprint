@@ -24,13 +24,13 @@ const workouts = {
           name: 'Push-ups', 
           sets: 2, 
           reps: 10,
-          demoUrl: 'https://giphy.com/gifs/workout-fitness-pushups-l3fQf0v0xBLzjIysQ'  // Giphy GIF link
+          demoUrl: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExeDM2bzZvcWk0bmdrY3hydzJseXphOGxyaWZsdms1d2gzenBtazBidyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5t9IcXiBCyw60XPpGu/giphy.gif'
         },
         { 
           name: 'Body-weight Squats', 
           sets: 2, 
           reps: 15,
-          demoUrl: 'https://giphy.com/gifs/fitness-squat-l1J9EdzfmzgjmOSWY'  // Another Giphy GIF link
+          demoUrl: 'https://giphy.com/gifs/fitness-squat-l1J9EdzfmzgjmOSWY'
         },
         { name: 'Plank', sets: 2, time: '30 seconds' },
         { name: 'Lunges', sets: 2, reps: 10 },
@@ -65,7 +65,7 @@ const workouts = {
           name: 'Push-ups', 
           sets: 3, 
           reps: 15,
-          demoUrl: 'https://giphy.com/gifs/pushup-l0HlBO7ysZfLh23aU'  // Giphy GIF link
+          demoUrl: 'https://giphy.com/gifs/pushup-l0HlBO7ysZfLh23aU'
         },
         { name: 'Dumbbell Rows', sets: 3, reps: 12 },
         { name: 'Shoulder Press', sets: 3, reps: 12 },
