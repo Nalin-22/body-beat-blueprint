@@ -24,9 +24,14 @@ const workouts = {
           name: 'Push-ups', 
           sets: 2, 
           reps: 10,
-          demoUrl: 'https://example.com/pushup-demo.mp4'  // Replace with actual demo URL
+          demoUrl: 'https://giphy.com/gifs/workout-fitness-pushups-l3fQf0v0xBLzjIysQ'  // Giphy GIF link
         },
-        { name: 'Body-weight Squats', sets: 2, reps: 15 },
+        { 
+          name: 'Body-weight Squats', 
+          sets: 2, 
+          reps: 15,
+          demoUrl: 'https://giphy.com/gifs/fitness-squat-l1J9EdzfmzgjmOSWY'  // Another Giphy GIF link
+        },
         { name: 'Plank', sets: 2, time: '30 seconds' },
         { name: 'Lunges', sets: 2, reps: 10 },
         { name: 'Mountain Climbers', sets: 2, time: '30 seconds' }
@@ -56,7 +61,12 @@ const workouts = {
       intensity: 'Medium',
       caloriesBurned: 300,
       exercises: [
-        { name: 'Push-ups', sets: 3, reps: 15 },
+        { 
+          name: 'Push-ups', 
+          sets: 3, 
+          reps: 15,
+          demoUrl: 'https://giphy.com/gifs/pushup-l0HlBO7ysZfLh23aU'  // Giphy GIF link
+        },
         { name: 'Dumbbell Rows', sets: 3, reps: 12 },
         { name: 'Shoulder Press', sets: 3, reps: 12 },
         { name: 'Tricep Dips', sets: 3, reps: 12 },
