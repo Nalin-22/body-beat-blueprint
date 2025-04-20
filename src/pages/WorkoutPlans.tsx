@@ -161,6 +161,10 @@ const WorkoutPlans = () => {
     navigate('/dashboard/workout-history');
   };
 
+  const handleCreateWorkout = () => {
+    navigate('/dashboard/create-workout');
+  };
+
   const getIntensityColor = (intensity: string) => {
     switch (intensity.toLowerCase()) {
       case 'low':
@@ -186,7 +190,7 @@ const WorkoutPlans = () => {
             <p className="text-gray-600">Choose a workout or create your own</p>
           </div>
         </div>
-        <Button onClick={() => setOpenDialog(true)}>
+        <Button onClick={handleCreateWorkout}>
           <Plus className="mr-2 h-4 w-4" /> Create Workout
         </Button>
       </div>

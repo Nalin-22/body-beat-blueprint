@@ -9,6 +9,104 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      custom_workout_exercises: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          order_index: number
+          reps: number | null
+          rest: string | null
+          sets: number
+          time: string | null
+          workout_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          order_index: number
+          reps?: number | null
+          rest?: string | null
+          sets?: number
+          time?: string | null
+          workout_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          order_index?: number
+          reps?: number | null
+          rest?: string | null
+          sets?: number
+          time?: string | null
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_workout_exercises_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "custom_workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_workouts: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      exercise_database: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          difficulty: string | null
+          id: string
+          muscle_group: string | null
+          name: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          muscle_group?: string | null
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          muscle_group?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
