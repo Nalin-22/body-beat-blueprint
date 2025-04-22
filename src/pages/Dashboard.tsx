@@ -67,10 +67,13 @@ const Dashboard = () => {
     },
   ];
 
+  // Get user's name from metadata or profile
+  const userName = user?.user_metadata?.name || '';
+
   return (
     <div className="space-y-6">
       <div className="text-left">
-        <h1 className="text-3xl font-bold mb-2">Welcome back{user?.name ? `, ${user.name}` : ''}</h1>
+        <h1 className="text-3xl font-bold mb-2">Welcome back{userName ? `, ${userName}` : ''}</h1>
         <p className="text-gray-600">Here's an overview of your fitness journey</p>
       </div>
 
