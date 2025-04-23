@@ -2,13 +2,15 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { History, CalendarIcon, ArrowRight } from 'lucide-react';
+import { History, CalendarIcon, ArrowRight, Database, HardDrive } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/sonner';
 
 interface WorkoutHistoryItem {
   id: string;
@@ -19,8 +21,11 @@ interface WorkoutHistoryItem {
 const WorkoutHistory = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { user } = useAuth();
+  const [localWorkouts, setLocalWorkouts] = useState<WorkoutHistoryItem[]>([]);
+  const [combinedWorkouts, setCombinedWorkouts] = useState<WorkoutHistoryItem[]>([]);
 
-  const { data: history = [], isLoading } = useQuery({
+  // Fetch remote workouts
+  const { data: remoteWorkouts = [], isLoading, refetch } = useQuery({
     queryKey: ['workoutHistory', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -38,14 +43,111 @@ const WorkoutHistory = () => {
     enabled: !!user,
   });
 
+  // Load local workouts from localStorage
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('workoutHistory');
+    if (savedHistory) {
+      try {
+        const parsedHistory = JSON.parse(savedHistory);
+        if (Array.isArray(parsedHistory)) {
+          setLocalWorkouts(parsedHistory);
+        }
+      } catch (error) {
+        console.error('Error parsing localStorage workout history:', error);
+      }
+    }
+  }, []);
+
+  // Combine remote and local workouts, removing duplicates
+  useEffect(() => {
+    const combined = [...remoteWorkouts];
+    
+    // Add local workouts that aren't in remote (based on title and date)
+    localWorkouts.forEach(localWorkout => {
+      const isDuplicate = remoteWorkouts.some(remoteWorkout => 
+        remoteWorkout.title === localWorkout.title && 
+        new Date(remoteWorkout.date).toDateString() === new Date(localWorkout.date).toDateString()
+      );
+      
+      if (!isDuplicate) {
+        combined.push(localWorkout);
+      }
+    });
+    
+    // Sort by date descending
+    combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    setCombinedWorkouts(combined);
+  }, [remoteWorkouts, localWorkouts]);
+
+  // Migrate local workouts to Supabase if user is logged in
+  const migrateLocalWorkouts = async () => {
+    if (!user) {
+      toast.error('Please log in to migrate your workout data');
+      return;
+    }
+
+    try {
+      // Filter local workouts that don't exist in remote
+      const workoutsToMigrate = localWorkouts.filter(localWorkout => {
+        return !remoteWorkouts.some(remoteWorkout => 
+          remoteWorkout.title === localWorkout.title && 
+          new Date(remoteWorkout.date).toDateString() === new Date(localWorkout.date).toDateString()
+        );
+      });
+
+      if (workoutsToMigrate.length === 0) {
+        toast.info('No new workouts to migrate');
+        return;
+      }
+
+      // Prepare workout data for insertion
+      const workoutsForDb = workoutsToMigrate.map(workout => ({
+        title: workout.title,
+        user_id: user.id,
+        date: workout.date,
+      }));
+
+      // Insert workouts to Supabase
+      const { error } = await supabase
+        .from('workout_history')
+        .insert(workoutsForDb);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success(`Successfully migrated ${workoutsToMigrate.length} workouts`);
+      refetch(); // Refresh remote workout data
+    } catch (error) {
+      console.error('Error migrating workouts:', error);
+      toast.error('Failed to migrate workouts');
+    }
+  };
+
   // Filter workouts by selected date
-  const filteredWorkouts = date ? history.filter((workout) => {
+  const filteredWorkouts = date ? combinedWorkouts.filter((workout) => {
     const workoutDate = new Date(workout.date);
     return workoutDate.toDateString() === date.toDateString();
   }) : [];
 
   // Get dates with workouts for highlighting in calendar
-  const datesWithWorkouts = history.map(item => new Date(item.date));
+  const datesWithWorkouts = combinedWorkouts.map(item => new Date(item.date));
+
+  const getWorkoutSource = (workout: WorkoutHistoryItem) => {
+    const inLocal = localWorkouts.some(local => 
+      local.title === workout.title && 
+      new Date(local.date).toDateString() === new Date(workout.date).toDateString()
+    );
+    
+    const inRemote = remoteWorkouts.some(remote => 
+      remote.title === workout.title && 
+      new Date(remote.date).toDateString() === new Date(workout.date).toDateString()
+    );
+
+    if (inLocal && inRemote) return 'both';
+    if (inLocal) return 'local';
+    return 'remote';
+  };
 
   if (isLoading) {
     return (
@@ -57,14 +159,22 @@ const WorkoutHistory = () => {
 
   return (
     <div>
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="rounded-full bg-fitness-teal/10 p-3">
-          <History className="h-6 w-6 text-fitness-teal" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="rounded-full bg-fitness-teal/10 p-3">
+            <History className="h-6 w-6 text-fitness-teal" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Workout History</h1>
+            <p className="text-gray-600">Track your fitness journey progress</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold">Workout History</h1>
-          <p className="text-gray-600">Track your fitness journey progress</p>
-        </div>
+        {localWorkouts.length > 0 && user && (
+          <Button onClick={migrateLocalWorkouts} variant="outline" className="gap-2">
+            <HardDrive className="h-4 w-4" />
+            Migrate Local Workouts
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -110,8 +220,23 @@ const WorkoutHistory = () => {
                 <span className="text-gray-500">Workout day</span>
               </div>
               <div>
-                <span className="font-medium">{history.length}</span>
+                <span className="font-medium">{combinedWorkouts.length}</span>
                 <span className="text-gray-500 ml-1">Total workouts</span>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col space-y-2">
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Database className="h-3 w-3" /> Database
+                </Badge>
+                <span>Stored online</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <HardDrive className="h-3 w-3" /> Local
+                </Badge>
+                <span>Stored on device</span>
               </div>
             </div>
           </CardContent>
@@ -133,24 +258,47 @@ const WorkoutHistory = () => {
           <CardContent>
             {filteredWorkouts.length > 0 ? (
               <div className="space-y-4">
-                {filteredWorkouts.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-md">
-                    <div>
-                      <h3 className="font-medium">{item.title}</h3>
-                      <p className="text-sm text-gray-500">
-                        {format(new Date(item.date), 'h:mm a')}
-                      </p>
+                {filteredWorkouts.map((item, index) => {
+                  const source = getWorkoutSource(item);
+                  return (
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between p-4 border rounded-md transition-all hover:shadow-md"
+                    >
+                      <div>
+                        <h3 className="font-medium">{item.title}</h3>
+                        <div className="flex items-center space-x-2">
+                          <p className="text-sm text-gray-500">
+                            {format(new Date(item.date), 'h:mm a')}
+                          </p>
+                          {source === 'local' && (
+                            <Badge variant="outline" className="text-xs flex items-center gap-1">
+                              <HardDrive className="h-3 w-3" /> Local
+                            </Badge>
+                          )}
+                          {source === 'remote' && (
+                            <Badge variant="outline" className="text-xs flex items-center gap-1">
+                              <Database className="h-3 w-3" /> Database
+                            </Badge>
+                          )}
+                          {source === 'both' && (
+                            <Badge variant="outline" className="text-xs flex items-center gap-1">
+                              <Database className="h-3 w-3" /> <HardDrive className="h-3 w-3" /> Both
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline">
+                        Details <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button size="sm" variant="outline">
-                      Details <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-10">
                 <History className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                {history.length > 0 ? (
+                {combinedWorkouts.length > 0 ? (
                   <>
                     <h3 className="text-lg font-medium text-gray-900 mb-1">No workouts on this day</h3>
                     <p className="text-gray-500">Select another date or start a workout</p>
