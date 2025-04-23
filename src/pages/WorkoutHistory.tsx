@@ -6,6 +6,9 @@ import { History, CalendarIcon, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 interface WorkoutHistoryItem {
   id: string;
@@ -14,16 +17,26 @@ interface WorkoutHistoryItem {
 }
 
 const WorkoutHistory = () => {
-  const [history, setHistory] = useState<WorkoutHistoryItem[]>([]);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const { user } = useAuth();
 
-  useEffect(() => {
-    // Load workout history from localStorage
-    const savedHistory = localStorage.getItem('workoutHistory');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
-    }
-  }, []);
+  const { data: history = [], isLoading } = useQuery({
+    queryKey: ['workoutHistory', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('workout_history')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching workout history:', error);
+        return [];
+      }
+
+      return data as WorkoutHistoryItem[];
+    },
+    enabled: !!user,
+  });
 
   // Filter workouts by selected date
   const filteredWorkouts = date ? history.filter((workout) => {
@@ -33,6 +46,14 @@ const WorkoutHistory = () => {
 
   // Get dates with workouts for highlighting in calendar
   const datesWithWorkouts = history.map(item => new Date(item.date));
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p>Loading workout history...</p>
+      </div>
+    );
+  }
 
   return (
     <div>

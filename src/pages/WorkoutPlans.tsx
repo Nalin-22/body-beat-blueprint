@@ -9,6 +9,8 @@ import { Dumbbell, Plus, Clock, Flame, Play } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { useNavigate } from 'react-router-dom';
 import ExerciseDemo from '@/components/ExerciseDemo';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const workouts = {
   beginner: [
@@ -146,19 +148,33 @@ const WorkoutPlans = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const startWorkout = (workout: Workout) => {
-    toast.success(`Started: ${workout.title}`);
-    
-    const history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-    history.push({
-      id: workout.id,
-      title: workout.title,
-      date: new Date().toISOString(),
-    });
-    localStorage.setItem('workoutHistory', JSON.stringify(history));
-    
-    navigate('/dashboard/workout-history');
+  const startWorkout = async (workout: Workout) => {
+    if (!user) {
+      toast.error('Please login to start a workout');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('workout_history')
+        .insert({
+          title: workout.title,
+          user_id: user.id,
+          date: new Date().toISOString(),
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success(`Started: ${workout.title}`);
+      navigate('/dashboard/workout-history');
+    } catch (error) {
+      console.error('Error saving workout:', error);
+      toast.error('Failed to start workout');
+    }
   };
 
   const handleCreateWorkout = () => {
