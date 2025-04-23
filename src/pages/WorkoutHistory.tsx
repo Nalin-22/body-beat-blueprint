@@ -24,17 +24,21 @@ const WorkoutHistory = () => {
   const [localWorkouts, setLocalWorkouts] = useState<WorkoutHistoryItem[]>([]);
   const [combinedWorkouts, setCombinedWorkouts] = useState<WorkoutHistoryItem[]>([]);
 
-  // Fetch remote workouts
+  // Fetch remote workouts - updated to explicitly use the user ID
   const { data: remoteWorkouts = [], isLoading, refetch } = useQuery({
     queryKey: ['workoutHistory', user?.id],
     queryFn: async () => {
+      if (!user) return [];
+      
       const { data, error } = await supabase
         .from('workout_history')
         .select('*')
+        .eq('user_id', user.id)
         .order('date', { ascending: false });
 
       if (error) {
         console.error('Error fetching workout history:', error);
+        toast.error('Failed to load workout history');
         return [];
       }
 
@@ -79,7 +83,7 @@ const WorkoutHistory = () => {
     setCombinedWorkouts(combined);
   }, [remoteWorkouts, localWorkouts]);
 
-  // Migrate local workouts to Supabase if user is logged in
+  // Migrate local workouts to Supabase if user is logged in - updated to explicitly set user_id
   const migrateLocalWorkouts = async () => {
     if (!user) {
       toast.error('Please log in to migrate your workout data');
@@ -100,7 +104,7 @@ const WorkoutHistory = () => {
         return;
       }
 
-      // Prepare workout data for insertion
+      // Prepare workout data for insertion - explicitly set user_id
       const workoutsForDb = workoutsToMigrate.map(workout => ({
         title: workout.title,
         user_id: user.id,
@@ -113,6 +117,7 @@ const WorkoutHistory = () => {
         .insert(workoutsForDb);
 
       if (error) {
+        console.error('Migration error:', error);
         throw error;
       }
 
