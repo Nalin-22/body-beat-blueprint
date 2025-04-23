@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -195,29 +196,22 @@ const CalorieCounter = () => {
   const foodsByCategory = foodDatabase.filter(food => food.category === foodCategory);
 
   return (
-    <div className="animate-fade-in">
+    <div>
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4 hover:scale-105 transition-transform">
-          <div className="rounded-full bg-gradient-to-br from-orange-400 to-orange-500/80 p-3 shadow-lg">
-            <Apple className="h-6 w-6 text-white" />
+        <div className="flex items-center space-x-4">
+          <div className="rounded-full bg-orange-500/10 p-3">
+            <Apple className="h-6 w-6 text-orange-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-600">
-              Calorie Counter
-            </h1>
+            <h1 className="text-2xl font-bold">Calorie Counter</h1>
             <p className="text-gray-600">Track your daily food intake</p>
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button 
-            variant={notificationsEnabled ? "default" : "outline"} 
-            onClick={toggleNotifications}
-            className="transition-all duration-300 hover:scale-105"
-          >
+          <Button variant={notificationsEnabled ? "default" : "outline"} onClick={toggleNotifications}>
             <Bell className={`mr-2 h-4 w-4 ${notificationsEnabled ? "" : "text-muted-foreground"}`} />
             {notificationsEnabled ? "Notifications On" : "Enable Notifications"}
           </Button>
-          
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -374,7 +368,7 @@ const CalorieCounter = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1 transform transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-t-4 border-t-orange-500">
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Today's Summary</CardTitle>
             <CardDescription>
@@ -389,28 +383,24 @@ const CalorieCounter = () => {
               </div>
               <Progress 
                 value={(totalCaloriesToday / dailyCalorieGoal) * 100} 
-                className={`h-2 transition-all duration-500 ${
-                  totalCaloriesToday > dailyCalorieGoal 
-                    ? "bg-red-500" 
-                    : "bg-gradient-to-r from-orange-400 to-orange-600"
-                }`}
+                className={`h-2 ${totalCaloriesToday > dailyCalorieGoal ? "bg-red-500" : ""}`}
               />
             </div>
 
-            <div className="flex items-center bg-gradient-to-br from-orange-50 to-orange-100/50 p-4 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md">
-              <PieChart className="h-5 w-5 text-orange-500 mr-3 animate-pulse" />
+            <div className="flex items-center bg-orange-50 p-3 rounded-md">
+              <PieChart className="h-5 w-5 text-orange-500 mr-3" />
               <div className="text-sm">
                 {totalCaloriesToday < dailyCalorieGoal ? (
-                  <p>You have <span className="font-medium text-orange-600">{dailyCalorieGoal - totalCaloriesToday} calories</span> left for today</p>
+                  <p>You have <span className="font-medium">{dailyCalorieGoal - totalCaloriesToday} calories</span> left for today</p>
                 ) : (
-                  <p>You've exceeded your goal by <span className="font-medium text-red-500">{totalCaloriesToday - dailyCalorieGoal} calories</span></p>
+                  <p>You've exceeded your goal by <span className="font-medium">{totalCaloriesToday - dailyCalorieGoal} calories</span></p>
                 )}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 transform transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Today's Food Entries</CardTitle>
             <CardDescription>
@@ -427,17 +417,12 @@ const CalorieCounter = () => {
                   { title: 'Snacks', entries: snackEntries }
                 ].map((mealGroup, idx) => (
                   mealGroup.entries.length > 0 && (
-                    <div key={idx} className="mb-6 last:mb-0 animate-fade-in" style={{
-                      animationDelay: `${idx * 150}ms`
-                    }}>
+                    <div key={idx} className="mb-6 last:mb-0">
                       <h3 className="font-medium mb-3">{mealGroup.title}</h3>
-                      {mealGroup.entries.map((entry, entryIdx) => (
+                      {mealGroup.entries.map((entry) => (
                         <div
                           key={entry.id}
-                          className="flex items-center justify-between p-4 border rounded-xl mb-2 last:mb-0 transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:bg-orange-50/50 animate-fade-in"
-                          style={{
-                            animationDelay: `${(idx * 150) + (entryIdx * 100)}ms`
-                          }}
+                          className="flex items-center justify-between p-3 border rounded-md mb-2 last:mb-0"
                         >
                           <div>
                             <div className="font-medium">{entry.name}</div>
@@ -449,9 +434,8 @@ const CalorieCounter = () => {
                               variant="ghost" 
                               size="icon"
                               onClick={() => handleDeleteEntry(entry.id)}
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>
                         </div>
@@ -461,14 +445,11 @@ const CalorieCounter = () => {
                 ))}
               </ScrollArea>
             ) : (
-              <div className="text-center py-10 animate-fade-in">
-                <Apple className="h-12 w-12 mx-auto text-orange-300 mb-4 animate-bounce" />
+              <div className="text-center py-10">
+                <Apple className="h-12 w-12 mx-auto text-gray-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-1">No food entries yet</h3>
                 <p className="text-gray-500 mb-4">Start adding what you eat to track your calories</p>
-                <Button 
-                  onClick={() => setDialogOpen(true)}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-300 hover:scale-105"
-                >
+                <Button onClick={() => setDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" /> Add Food Entry
                 </Button>
               </div>
