@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,6 @@ const WorkoutHistory = () => {
   const [localWorkouts, setLocalWorkouts] = useState<WorkoutHistoryItem[]>([]);
   const [combinedWorkouts, setCombinedWorkouts] = useState<WorkoutHistoryItem[]>([]);
 
-  // Fetch remote workouts - updated to explicitly use the user ID
   const { data: remoteWorkouts = [], isLoading, refetch } = useQuery({
     queryKey: ['workoutHistory', user?.id],
     queryFn: async () => {
@@ -47,7 +45,6 @@ const WorkoutHistory = () => {
     enabled: !!user,
   });
 
-  // Load local workouts from localStorage
   useEffect(() => {
     const savedHistory = localStorage.getItem('workoutHistory');
     if (savedHistory) {
@@ -62,11 +59,9 @@ const WorkoutHistory = () => {
     }
   }, []);
 
-  // Combine remote and local workouts, removing duplicates
   useEffect(() => {
     const combined = [...remoteWorkouts];
     
-    // Add local workouts that aren't in remote (based on title and date)
     localWorkouts.forEach(localWorkout => {
       const isDuplicate = remoteWorkouts.some(remoteWorkout => 
         remoteWorkout.title === localWorkout.title && 
@@ -78,12 +73,10 @@ const WorkoutHistory = () => {
       }
     });
     
-    // Sort by date descending
     combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setCombinedWorkouts(combined);
   }, [remoteWorkouts, localWorkouts]);
 
-  // Migrate local workouts to Supabase if user is logged in - updated to explicitly set user_id
   const migrateLocalWorkouts = async () => {
     if (!user) {
       toast.error('Please log in to migrate your workout data');
@@ -91,7 +84,6 @@ const WorkoutHistory = () => {
     }
 
     try {
-      // Filter local workouts that don't exist in remote
       const workoutsToMigrate = localWorkouts.filter(localWorkout => {
         return !remoteWorkouts.some(remoteWorkout => 
           remoteWorkout.title === localWorkout.title && 
@@ -104,14 +96,12 @@ const WorkoutHistory = () => {
         return;
       }
 
-      // Prepare workout data for insertion - explicitly set user_id
       const workoutsForDb = workoutsToMigrate.map(workout => ({
         title: workout.title,
         user_id: user.id,
         date: workout.date,
       }));
 
-      // Insert workouts to Supabase
       const { error } = await supabase
         .from('workout_history')
         .insert(workoutsForDb);
@@ -122,20 +112,44 @@ const WorkoutHistory = () => {
       }
 
       toast.success(`Successfully migrated ${workoutsToMigrate.length} workouts`);
-      refetch(); // Refresh remote workout data
+      refetch();
     } catch (error) {
       console.error('Error migrating workouts:', error);
       toast.error('Failed to migrate workouts');
     }
   };
 
-  // Filter workouts by selected date
+  const deleteLocalWorkout = (dateToDelete: string) => {
+    const savedHistory = localStorage.getItem('workoutHistory');
+    if (savedHistory) {
+      try {
+        const parsedHistory: WorkoutHistoryItem[] = JSON.parse(savedHistory);
+        
+        const updatedHistory = parsedHistory.filter(workout => 
+          new Date(workout.date).toDateString() !== new Date(dateToDelete).toDateString()
+        );
+
+        localStorage.setItem('workoutHistory', JSON.stringify(updatedHistory));
+        setLocalWorkouts(updatedHistory);
+
+        toast.success(`Workout on ${format(new Date(dateToDelete), 'PPP')} deleted`);
+      } catch (error) {
+        console.error('Error deleting local workout:', error);
+        toast.error('Failed to delete workout');
+      }
+    }
+  };
+
+  useEffect(() => {
+    deleteLocalWorkout('2025-04-14');
+    deleteLocalWorkout('2025-04-19');
+  }, []);
+
   const filteredWorkouts = date ? combinedWorkouts.filter((workout) => {
     const workoutDate = new Date(workout.date);
     return workoutDate.toDateString() === date.toDateString();
   }) : [];
 
-  // Get dates with workouts for highlighting in calendar
   const datesWithWorkouts = combinedWorkouts.map(item => new Date(item.date));
 
   const getWorkoutSource = (workout: WorkoutHistoryItem) => {
